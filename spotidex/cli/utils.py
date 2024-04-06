@@ -90,26 +90,12 @@ input_validator = lambda value: (
 )
 
 def get_data_drive_path():
-    # Get a list of all available drives
-    drives = [chr(i) + ':' for i in range(ord('A'), ord('Z')+1)]
-
-    # Iterate through the drives and find the one with the most available space
-    max_free_space = 0
-    data_drive_path = None
-    for drive in drives:
-        try:
-            free_space = shutil.disk_usage(drive).free
-            if free_space > max_free_space:
-                max_free_space = free_space
-                data_drive_path = os.path.join(drive, '/')
-        except OSError:
-            # Ignore drives that are not accessible
-            pass
-
-    if data_drive_path is None:
-        raise ValueError("Data drive not found")
-
-    return data_drive_path
+    if os.name == 'nt':  # Windows
+        drives = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+        available_drives = [drive + ':\\' for drive in drives if os.path.exists(drive + ':\\')]
+        return available_drives[0] if available_drives else None
+    else:  # Unix-like systems
+        return '/'
 
 def get_downloads_folder():
     # Get the user's home directory
