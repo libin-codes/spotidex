@@ -5,7 +5,7 @@ with open("README.md","r") as f:
 
 setup(
     name="spotidex",
-    version="0.0.2",
+    version="0.0.3",
     long_description=description,
     long_description_content_type="text/markdown",
     packages=find_packages(),
