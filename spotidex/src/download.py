@@ -51,7 +51,7 @@ class SpotifyDownloader:
         if self.is_library:
             options = {
             "format": "bestaudio/best",
-            "outtmpl": f"{str(download_path)+'\\'+file_name}",
+            "outtmpl": str(download_path)+'\\'+file_name,
             "quiet": True,
             "noprogress": True,
             "progress": "false",
@@ -82,7 +82,7 @@ class SpotifyDownloader:
 
                 options = {
                     "format": "bestaudio/best",
-                    "outtmpl": f"{ str(Path(temp_folder))+'\\'+file_name}",
+                    "outtmpl": str(Path(temp_folder))+'\\'+file_name,
                     "quiet": True,
                     "noprogress": True,
                     "progress": "false",
