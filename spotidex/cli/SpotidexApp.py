@@ -20,6 +20,5 @@ class SpotidexApp(App):
 def main():
     SpotidexApp().run()
 
-main()
 
 

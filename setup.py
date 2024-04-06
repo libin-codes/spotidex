@@ -1,8 +1,13 @@
 from setuptools import setup,find_packages
+
+with open("README.md","r") as f:
+    description = f.read()
+
 setup(
     name="spotidex",
     version="0.0.1",
-    description="Download spotify songs , playlist and albums for free",
+    long_description=description,
+    long_description_content_type="text/markdown",
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
