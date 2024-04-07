@@ -65,7 +65,11 @@ class Search(Screen):
         self.app.query_one("LoadingIndicator").styles.background = "#1c1c1c"
         try:
             self.app.link_details = get_link_details(self.app.spotify_link)
-        except Exception:
+        except Exception as spotidex_error:
+            if spotidex_error.message == "NetworkError":
+                self.app.notify("Network Connection Error",title="SPOTIDEX",severity="error")
+            elif spotidex_error.message == "InvalidSpotifyLink":
+                self.app.notify("Invalid Spotify Link",title="SPOTIDEX",severity="error")
             get_current_worker().cancel()
         self.app.query_one("#interface").loading = False
         self.app.query_one("#exit-button").disabled = False
@@ -74,7 +78,6 @@ class Search(Screen):
         
     def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
         if str(event.state) == "WorkerState.CANCELLED":
-            self.app.notify("Network Connection Error",title="SPOTIDEX",severity="error")
             self.query_one('#search-input').visible = True
             self.query_one('#app-description').visible = True
             self.query_one('#search-button').visible = True

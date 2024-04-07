@@ -1,49 +1,33 @@
-import requests
+import os,re,stat,platform,requests,subprocess
 from mutagen.id3 import ID3, APIC, TPE1, TIT2, TALB
-
-from rich.panel import Panel
-from rich.console import Console
-from rich.table import Table
-import os
-import stat
-import platform
-from pathlib import Path
-from spotidex.src.static import FFMPEG_URLS
-from tqdm import tqdm
 import concurrent.futures
-import subprocess
+from pathlib import Path
+from tqdm import tqdm
 
-console = Console()
-clear_screen = lambda: print("\033c", end="")
-validate_link = lambda link: True if "spotify.com" in link else False
-validate_selection = lambda selected_songs: True if len(selected_songs) != 0 else False
+from spotidex.src.static import FFMPEG_URLS
 
+class SpotidexError(Exception):
+    def __init__(self,message):
+        self.message = message
+        super().__init__(message)
 
 def extract_track_links(sp, link):
     id = link.split("/")[-1].split("?")[0]
-    if "playlist" in link:
-        data = sp.playlist(id)
-    elif "album" in link:
-        data = sp.album(id)
-
+    is_playlist = "playlist" in link
+    data = sp.playlist(id) if is_playlist else sp.album(id)
     total_tracks = data["tracks"]["total"]
-    offset, limit = 0, 100
+    offset, limit = 0, 100 if is_playlist else 40
     track_links = []
 
     while offset < total_tracks:
-        if "playlist" in link:
-            results = sp.playlist_items(id, offset=offset, limit=limit)
-            for track in results["items"]:
-                track_links.append(track["track"]["href"])
-
-        elif "album" in link:
-            limit = 40
-            results = sp.album_tracks(id, offset=offset, limit=limit)
-            for track in results["items"]:
-                track_links.append(track["href"])
-
+        results = (
+            sp.playlist_items(id, offset=offset, limit=limit)
+            if is_playlist
+            else sp.album_tracks(id, offset=offset, limit=limit)
+        )
+        for track in results["items"]:
+            track_links.append(track["track"]["href"] if is_playlist else track["href"])
         offset += limit
-
     return track_links
 
 
@@ -76,6 +60,7 @@ def pool_download(
     metadata,
     max_concurrent=4,
 ):
+    downloader.is_library = True
     with concurrent.futures.ThreadPoolExecutor(max_concurrent) as executor:
         tasks = [
             executor.submit(
@@ -88,18 +73,17 @@ def pool_download(
             )
             for link in links
         ]
-        return concurrent.futures.wait(tasks,return_when="FIRST_EXCEPTION")
+        return concurrent.futures.wait(tasks, return_when="FIRST_EXCEPTION")
 
 
 def progress_hook(self, d, custom_hook=None):
+    if custom_hook is None:
+        return
     if d["status"] == "downloading":
         percent = "".join(
             char for char in d["_percent_str"] if char.isdigit() or char == "."
         )
         if self.is_library:
-            percent = "".join(
-                char for char in d["_percent_str"] if char.isdigit() or char == "."
-            )
             self.progress_dict.update(
                 {d["info_dict"]["id"]: float(percent[3:]) * 0.943}
             )
@@ -120,115 +104,48 @@ def parallel_searches(self, track_links):
     return [task.result() for task in tasks]
 
 
-def display_settings(settings):
-    table = Table(
-        title="[bold green]SETTINGS",
-        show_header=False,
-        row_styles=["yellow", "yellow", "yellow"],
-        show_lines=True,
-    )
-    for i in settings.keys():
-        table.add_row(i, settings[i])
-    console.print(Panel(table, expand=False, border_style="blue"))
-
-
-def display_table(dic: dict):
-    title = {
-        "ALBUM ID": "ALBUM INFO",
-        "PLAYLIST ID": "PLAYLIST INFO",
-        "TRACK ID": "TRACK INFO",
-    }
-
-    table = Table(
-        title=f"[bold green]{title[list(dic.keys())[0]]}",
-        show_header=False,
-        row_styles=["yellow", "yellow", "yellow"],
-        show_lines=True,
-    )
-
-    for i in dic.keys():
-        table.add_row(i, str(dic[i]))
-    console.print(Panel(table, expand=False, border_style="blue"))
-
-
-def display_selected_songs(li):
-    table = Table(
-        title="[bold green]SELECTED SONGS",
-        show_header=False,
-        row_styles=["yellow", "yellow", "yellow"],
-        show_lines=True,
-    )
-    table.add_column("Songs")
-    for i in li:
-        table.add_row(i)
-    console.print(Panel(table, expand=False, border_style="blue"))
-
-
 def get_spotidex_data_directory():
     spotidex_path = Path(os.path.expanduser("~"), ".spotidex")
     spotidex_path.mkdir(parents=True, exist_ok=True)
-
     return spotidex_path
-
 
 def get_ffmpeg():
     os_name = platform.system().lower()
     os_arch = platform.machine().lower()
 
     ffmpeg_url = FFMPEG_URLS.get(os_name, {}).get(os_arch)
-    ffmpeg_path = (
-        get_spotidex_data_directory()
-        / f"ffmpeg{''.join(('.exe' if os_name == 'windows' else ''))}"
-    )
+    ffmpeg_path = get_ffmpeg_path(os_name)
 
     if ffmpeg_path.exists():
-        current_path = Path().cwd()
-        os.chdir(get_spotidex_data_directory())
-        try:
-            subprocess.run(
-                ["./ffmpeg.exe"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-            )
-        except Exception:
-            try:
-                ffmpeg_binary = requests.get(ffmpeg_url, stream=True, timeout=10)
-            except Exception:
-                print(
-                    "Netowork Error: Please check your internet connction and try later"
-                )
-                exit()
-            with open(ffmpeg_path, "wb") as ffmpeg_file, tqdm(
-                total=100,
-                unit="%",
-                unit_scale=True,
-                unit_divisor=1024,
-                dynamic_ncols=True,
-                bar_format="Initializing : |{bar:50}| {percentage:.0f}% ",
-            ) as progress_bar:
-                try:
-                    for data in ffmpeg_binary.iter_content(chunk_size=1024):
-                        ffmpeg_file.write(data)
-                        progress_bar.update(
-                            len(data)
-                            * 100
-                            / int(ffmpeg_binary.headers.get("content-length", 0))
-                        )
-                except Exception:
-                    progress_bar.close()
-                    print(
-                        "Netowork Error: Please check your internet connction and try later"
-                    )
-                    exit()
-            if os_name in ["linux", "darwin"]:
-                ffmpeg_path.chmod(ffmpeg_path.stat().st_mode | stat.S_IEXEC)
-            os.chdir(current_path)
-            return ffmpeg_path
-        os.chdir(current_path)
+        run_ffmpeg(ffmpeg_path)
         return ffmpeg_path
 
+    download_ffmpeg(ffmpeg_url, ffmpeg_path, os_name)
+    return ffmpeg_path
+
+def get_ffmpeg_path(os_name):
+    executable_extension = ".exe" if os_name == "windows" else ""
+    return get_spotidex_data_directory() / f"ffmpeg{executable_extension}"
+
+def run_ffmpeg(ffmpeg_path):
+    current_path = Path().cwd()
+    os.chdir(get_spotidex_data_directory())
+    try:
+        subprocess.run(
+            [ffmpeg_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+    except Exception:
+        print("Network Error: Please check your internet connection and try later")
+        exit()
+    finally:
+        os.chdir(current_path)
+
+
+def download_ffmpeg(ffmpeg_url, ffmpeg_path, os_name):
     try:
         ffmpeg_binary = requests.get(ffmpeg_url, stream=True, timeout=10)
     except Exception:
-        print("Netowork Error: Please check your internet connction and try later")
+        print("Network Error: Please check your internet connection and try later")
         exit()
 
     with open(ffmpeg_path, "wb") as ffmpeg_file, tqdm(
@@ -239,7 +156,6 @@ def get_ffmpeg():
         dynamic_ncols=True,
         bar_format="Initializing : |{bar:50}| {percentage:.0f}% ",
     ) as progress_bar:
-
         try:
             for data in ffmpeg_binary.iter_content(chunk_size=1024):
                 ffmpeg_file.write(data)
@@ -250,10 +166,15 @@ def get_ffmpeg():
                 )
         except Exception:
             progress_bar.close()
-            print("Netowork Error: Please check your internet connction and try later")
+            print("Network Error: Please check your internet connection and try later")
             exit()
 
     if os_name in ["linux", "darwin"]:
         ffmpeg_path.chmod(ffmpeg_path.stat().st_mode | stat.S_IEXEC)
 
-    return ffmpeg_path
+def get_valid_name(path, name):
+    name, i = re.sub(r"[^\w\d(),.\- ]", "", name), 1
+    add_mp3 = ".mp3" if ".mp3" in name else ""
+    while Path(path, name).exists():
+        name, i = name.removesuffix(".mp3").split(" (")[0] + f" ({i})" + add_mp3, i + 1
+    return name.removesuffix(".mp3")

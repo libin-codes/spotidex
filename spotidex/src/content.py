@@ -2,6 +2,9 @@ from spotidex.src.utils import *
 from spotidex.src.static import *
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
+from spotipy import SpotifyException
+from requests import ConnectionError
+
 
 class SpotifyContent:
     def __init__(self) -> None:
@@ -10,8 +13,14 @@ class SpotifyContent:
 
     def album_details(self, link):
         album_id = link.split("/")[-1].split("?")[0]
-        album_data = self.sp.album(album_id)
-        track_links = extract_track_links(self.sp,link)
+        try:
+            album_data = self.sp.album(album_id)
+            track_links = extract_track_links(self.sp,link)
+        except ConnectionError:
+            raise SpotidexError("NetworkError")
+        except SpotifyException:
+            raise SpotidexError("InvalidSpotifyLink")
+        
 
         details = {
             "album_name": album_data["name"],
@@ -27,8 +36,15 @@ class SpotifyContent:
 
     def playlist_details(self, link):
         playlist_id = link.split("/")[-1].split("?")[0]
-        playlist_data = self.sp.playlist(playlist_id)
-        track_links = extract_track_links(self.sp, link)
+        try:
+            playlist_data = self.sp.playlist(playlist_id)
+            track_links = extract_track_links(self.sp, link)
+        except ConnectionError:
+            raise SpotidexError("NetworkError")
+        except SpotifyException:
+            raise SpotidexError("InvalidSpotifyLink")
+        
+        
 
         details = {
             "playlist_name": playlist_data["name"],
@@ -43,8 +59,12 @@ class SpotifyContent:
         return details
 
     def track_details(self, link):
-        track_data = self.sp.track(link.split("/")[-1].split("?")[0])
-
+        try:
+            track_data = self.sp.track(link.split("/")[-1].split("?")[0])
+        except ConnectionError:
+            raise SpotidexError("NetworkError")
+        except SpotifyException:
+            raise SpotidexError("InvalidSpotifyLink")
         details = {
             "track_name": track_data["name"],
             "track_number": track_data["track_number"],
