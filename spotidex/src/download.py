@@ -9,7 +9,7 @@ import yt_dlp.YoutubeDL
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from spotipy import SpotifyException
-from requests import ConnectionError
+from requests import ConnectionError,ReadTimeout
 
 
 
@@ -17,8 +17,7 @@ class SpotifyDownloader:
     def __init__(self) -> None:
         self.spotidex_path = get_spotidex_data_directory()
         self.ffmpeg_path = get_ffmpeg()
-        self.is_library = False
-        self.progress_dict = {}
+        self.total_tracks = None
         self.sp = spotipy.Spotify(
             client_credentials_manager=
                 SpotifyClientCredentials(
@@ -52,7 +51,7 @@ class SpotifyDownloader:
             progress_hook(self, {"status": "downloaded"}, custom_hook)
             for file_path in Path(temp_folder).iterdir():
                 shutil.move(str(file_path), str(download_path))
-            progress_hook(self, {"status": "transferred"}, custom_hook)
+            progress_hook(self, {"status": "transfered"}, custom_hook)
         
 
     def download_track(
@@ -67,8 +66,9 @@ class SpotifyDownloader:
             data = self.sp.track(link.split("/")[-1].split("?")[0])
         except SpotifyException:
             raise SpotidexError("InvalidSpotifyLink")
-        except ConnectionError:
+        except (ConnectionError,ReadTimeout):
             raise SpotidexError("NetworkError")
+
         
         track_artist = ",".join([artist["name"] for artist in data["artists"]])
         query = f"{data["name"]} song by {track_artist} official lyrics "
@@ -95,7 +95,7 @@ class SpotifyDownloader:
                 else [],
             }
                 
-            if not self.is_library:
+            if self.total_tracks == None:
                 options['outtmpl'] = str(Path(temp_folder))+'\\'+file_name
             ydl = yt_dlp.YoutubeDL(options)
             yt_video_result = ydl.extract_info(f"ytsearch:{query}", download=False)
@@ -106,13 +106,11 @@ class SpotifyDownloader:
             if metadata:
                 add_metadata(data, Path(downloaded_path + ".mp3").resolve())
 
-            if not self.is_library:
-                if custom_hook is not None:
-                    progress_hook(self, {"status": "downloaded"}, custom_hook)
+            if self.total_tracks == None:
+                progress_hook(self, {"status": "downloaded"}, custom_hook)
                 for file_path in Path(temp_folder).iterdir():
                     shutil.move(file_path, download_path)
-                if custom_hook is not None:
-                    progress_hook(self, {"status": "transfered"}, custom_hook)
+                progress_hook(self, {"status": "transfered"}, custom_hook)
     
     def download_playlist(
         self,
@@ -129,7 +127,7 @@ class SpotifyDownloader:
             track_links = extract_track_links(self.sp, link)
         except SpotifyException:
             raise SpotidexError("InvalidSpotifyLink")
-        except ConnectionError:
+        except (ConnectionError,ReadTimeout):
             raise SpotidexError("NetworkError")
         
         folder_name = get_valid_name(download_path,playlist_data['name'])
@@ -159,7 +157,7 @@ class SpotifyDownloader:
             track_links = extract_track_links(self.sp, link)
         except SpotifyException:
             raise SpotidexError("InvalidSpotifyLink")
-        except ConnectionError:
+        except (ConnectionError,ReadTimeout):
             raise SpotidexError("NetworkError")
         
         

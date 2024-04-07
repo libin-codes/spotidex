@@ -3,7 +3,7 @@ from spotidex.src.static import *
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
 from spotipy import SpotifyException
-from requests import ConnectionError
+from requests import ConnectionError,ReadTimeout
 
 
 class SpotifyContent:
@@ -16,7 +16,7 @@ class SpotifyContent:
         try:
             album_data = self.sp.album(album_id)
             track_links = extract_track_links(self.sp,link)
-        except ConnectionError:
+        except (ConnectionError,ReadTimeout):
             raise SpotidexError("NetworkError")
         except SpotifyException:
             raise SpotidexError("InvalidSpotifyLink")
@@ -39,7 +39,7 @@ class SpotifyContent:
         try:
             playlist_data = self.sp.playlist(playlist_id)
             track_links = extract_track_links(self.sp, link)
-        except ConnectionError:
+        except (ConnectionError,ReadTimeout):
             raise SpotidexError("NetworkError")
         except SpotifyException:
             raise SpotidexError("InvalidSpotifyLink")
@@ -61,7 +61,7 @@ class SpotifyContent:
     def track_details(self, link):
         try:
             track_data = self.sp.track(link.split("/")[-1].split("?")[0])
-        except ConnectionError:
+        except (ConnectionError,ReadTimeout):
             raise SpotidexError("NetworkError")
         except SpotifyException:
             raise SpotidexError("InvalidSpotifyLink")

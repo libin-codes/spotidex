@@ -150,7 +150,6 @@ class Download(Screen):
         def eval(value):
             if value == "retry":
                 self.app.query_one("ProgressBar",ProgressBar).update(progress=0, total=None)
-                self.app.query_one("ProgressBar",ProgressBar).p
                 self.download_music()
 
         if str(event.state) == "WorkerState.CANCELLED":

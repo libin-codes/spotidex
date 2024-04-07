@@ -6,6 +6,7 @@ from tqdm import tqdm
 
 from spotidex.src.static import FFMPEG_URLS
 
+progress_dict = {}
 class SpotidexError(Exception):
     def __init__(self,message):
         self.message = message
@@ -60,7 +61,7 @@ def pool_download(
     metadata,
     max_concurrent=4,
 ):
-    downloader.is_library = True
+    downloader.total_tracks = len(links)
     with concurrent.futures.ThreadPoolExecutor(max_concurrent) as executor:
         tasks = [
             executor.submit(
@@ -73,21 +74,22 @@ def pool_download(
             )
             for link in links
         ]
-        return concurrent.futures.wait(tasks, return_when="FIRST_EXCEPTION")
+        return concurrent.futures.wait(tasks)
 
 
 def progress_hook(self, d, custom_hook=None):
+    global progress_dict
     if custom_hook is None:
         return
     if d["status"] == "downloading":
         percent = "".join(
             char for char in d["_percent_str"] if char.isdigit() or char == "."
         )
-        if self.is_library:
-            self.progress_dict.update(
+        if self.total_tracks != None:
+            progress_dict.update(
                 {d["info_dict"]["id"]: float(percent[3:]) * 0.943}
             )
-            progress = sum(self.progress_dict.values()) / self.total_tracks
+            progress = sum(progress_dict.values()) / self.total_tracks
             custom_hook(str(round(progress, 1)))
         else:
             custom_hook(str(round(float(percent[3:]) * 0.943, 1)))
@@ -95,6 +97,8 @@ def progress_hook(self, d, custom_hook=None):
         custom_hook("97.8")
     elif d["status"] == "transfered":
         custom_hook("100")
+        progress_dict = {}
+        self.total_tracks = None
 
 
 def parallel_searches(self, track_links):
@@ -173,7 +177,7 @@ def download_ffmpeg(ffmpeg_url, ffmpeg_path, os_name):
         ffmpeg_path.chmod(ffmpeg_path.stat().st_mode | stat.S_IEXEC)
 
 def get_valid_name(path, name):
-    name, i = re.sub(r"[^\w\d(),.\- ]", "", name), 1
+    name, i = re.sub(r"[^\w\d(),.\-\[\] ]", "", name), 1
     add_mp3 = ".mp3" if ".mp3" in name else ""
     while Path(path, name).exists():
         name, i = name.removesuffix(".mp3").split(" (")[0] + f" ({i})" + add_mp3, i + 1
