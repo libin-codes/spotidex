@@ -4,7 +4,7 @@ from textual.containers import Horizontal
 
 from spotidex.cli.custom_widgets.AppInterface import AppInterface
 from spotidex.cli.app_screens.MainMenuInterface import MainMenuInterface
-from spotidex.cli.utils import input_validator,app_description
+from spotidex.cli.utils import input_validator, app_description
 from spotidex.cli.utils import get_link_details
 
 from textual.worker import Worker, get_current_worker
@@ -45,8 +45,10 @@ Search {
 }
 """
 
+
 class Search(Screen):
     DEFAULT_CSS = CSS
+
     def compose(self):
         yield AppInterface(
             Horizontal(
@@ -59,7 +61,7 @@ class Search(Screen):
             Label(app_description, id="app-description", shrink=True),
             id="search-interface",
         )
-    
+
     @work(exclusive=True, thread=True)
     def get_link_info(self):
         self.app.query_one("LoadingIndicator").styles.background = "#1c1c1c"
@@ -67,49 +69,56 @@ class Search(Screen):
             self.app.link_details = get_link_details(self.app.spotify_link)
         except Exception as spotidex_error:
             if spotidex_error.message == "NetworkError":
-                self.app.notify("Network Connection Error",title="SPOTIDEX",severity="error")
+                self.app.notify(
+                    "Please check you internet connection and try again",
+                    title="Network Error",
+                    severity="error",
+                )
             elif spotidex_error.message == "InvalidSpotifyLink":
-                self.app.notify("Invalid Spotify Link",title="SPOTIDEX",severity="error")
+                self.app.notify(
+                    "The link provided is not valid, please check the link and try again",
+                    title="INVALID LINK",
+                    severity="error",
+                )
             get_current_worker().cancel()
         self.app.query_one("#interface").loading = False
         self.app.query_one("#exit-button").disabled = False
-        self.app.query_one("#interface").styles.padding = (2,3,0,3)
-        
-        
+        self.app.query_one("#interface").styles.padding = (2, 3, 0, 3)
+
     def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
         if str(event.state) == "WorkerState.CANCELLED":
-            self.query_one('#search-input').visible = True
-            self.query_one('#app-description').visible = True
-            self.query_one('#search-button').visible = True
+            self.query_one("#search-input").visible = True
+            self.query_one("#app-description").visible = True
+            self.query_one("#search-button").visible = True
         elif str(event.state) == "WorkerState.SUCCESS":
             self.app.push_screen(MainMenuInterface())
-            self.query_one('#search-input').visible = True
-            self.query_one('#app-description').visible = True
-            self.query_one('#search-button').visible = True
+            self.query_one("#search-input").visible = True
+            self.query_one("#app-description").visible = True
+            self.query_one("#search-button").visible = True
             self.query_one("#search-button").disabled = True
-            
+
     def on_mount(self):
         self.app.query_one("#nav-label").update("[bold]HOME")
         self.query_one("#app-description").border_title = "ABOUT SPOTIDEX"
         self.app.query_one("#back-button").disabled = True
-        
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "search-button":
             self.app.query_one("#interface").styles.padding = 0
             self.app.spotify_link = self.query_one("#search-input").value
             self.app.query_one("#interface").loading = True
             self.app.query_one("#exit-button").disabled = True
-            self.query_one('#search-input').visible = False
-            self.query_one('#app-description').visible = False
-            self.query_one('#search-button').visible = False
+            self.query_one("#search-input").visible = False
+            self.query_one("#app-description").visible = False
+            self.query_one("#search-button").visible = False
             self.get_link_info()
-        
+
     def on_input_changed(self, event: Input.Changed):
         if input_validator(event.input.value):
-            self.app.query_one("#search-input",Input).styles.border = ("tall","green")
+            self.app.query_one("#search-input", Input).styles.border = ("tall", "green")
             self.app.query_one("#search-button").disabled = False
         elif event.input.value == "":
-            self.app.query_one("#search-input",Input).styles.border = ("tall","black")
+            self.app.query_one("#search-input", Input).styles.border = ("tall", "black")
         else:
-            self.app.query_one("#search-input",Input).styles.border = ("tall","red")
+            self.app.query_one("#search-input", Input).styles.border = ("tall", "red")
             self.app.query_one("#search-button").disabled = True

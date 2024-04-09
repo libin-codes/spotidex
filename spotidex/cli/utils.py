@@ -91,11 +91,14 @@ input_validator = lambda value: (
 
 def get_data_drive_path():
     if os.name == 'nt':  # Windows
+        system_drive = os.environ['SYSTEMDRIVE'] if 'SYSTEMDRIVE' in os.environ else 'C:'
         drives = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-        available_drives = [drive + ':\\' for drive in drives if os.path.exists(drive + ':\\')]
+        available_drives = [drive + ':\\' for drive in drives if os.path.exists(drive + ':\\') and drive + ':' != system_drive]
         return available_drives[0] if available_drives else None
     else:  # Unix-like systems
-        return '/'
+        # Filter out root directory ('/') from mounted drives
+        mounted_drives = [root for root, dirs, files in os.walk('/') if dirs or files]
+        return mounted_drives[0] if mounted_drives else None
 
 def get_downloads_folder():
     # Get the user's home directory

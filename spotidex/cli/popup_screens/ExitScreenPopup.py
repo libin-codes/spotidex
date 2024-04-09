@@ -48,6 +48,6 @@ class ExitScreen(ModalScreen):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "yes-exit-button":
-            exit()
+            self.app.exit()
         else:
             self.dismiss()

@@ -180,5 +180,5 @@ def get_valid_name(path, name):
     name, i = re.sub(r"[^\w\d(),.\-\[\] ]", "", name), 1
     add_mp3 = ".mp3" if ".mp3" in name else ""
     while Path(path, name).exists():
-        name, i = name.removesuffix(".mp3").split(" (")[0] + f" ({i})" + add_mp3, i + 1
-    return name.removesuffix(".mp3")
+        name, i = name.replace('.mp3',"").split(" (")[0] + f" ({i})" + add_mp3, i + 1
+    return name.replace('.mp3',"")

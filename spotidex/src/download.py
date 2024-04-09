@@ -71,7 +71,7 @@ class SpotifyDownloader:
 
         
         track_artist = ",".join([artist["name"] for artist in data["artists"]])
-        query = f"{data["name"]} song by {track_artist} official lyrics "
+        query = data["name"]+f" song by {track_artist} official lyrics "
         file_name = get_valid_name(download_path,data["name"]+".mp3")
     
         with TemporaryDirectory(dir=str(self.spotidex_path)) as temp_folder:
@@ -109,7 +109,7 @@ class SpotifyDownloader:
             if self.total_tracks == None:
                 progress_hook(self, {"status": "downloaded"}, custom_hook)
                 for file_path in Path(temp_folder).iterdir():
-                    shutil.move(file_path, download_path)
+                    shutil.move(str(file_path), str(download_path))
                 progress_hook(self, {"status": "transfered"}, custom_hook)
     
     def download_playlist(
