@@ -8,7 +8,9 @@ from spotidex.cli.utils import input_validator, app_description
 from spotidex.cli.utils import get_link_details
 
 from textual.worker import Worker, get_current_worker
+from textual.binding import Binding
 from textual import work
+import pyperclip
 
 CSS = """
 Search {
@@ -48,6 +50,10 @@ Search {
 
 class Search(Screen):
     DEFAULT_CSS = CSS
+    BINDINGS = [
+        Binding("tab", "paste_link", "PASTE SPOTIFY LINK",priority=True),
+        Binding("delete", "clear_input", "CLEAR INPUT",priority=True)
+    ]
 
     def compose(self):
         yield AppInterface(
@@ -61,6 +67,15 @@ class Search(Screen):
             Label(app_description, id="app-description", shrink=True),
             id="search-interface",
         )
+
+    def action_paste_link(self):
+        if self.query_one("#search-input", Input).value =="":
+            self.query_one("#search-input", Input).value = pyperclip.paste()
+        self.query_one("#search-input", Input).focus()
+    
+    def action_clear_input(self):
+        self.query_one("#search-input", Input).value = ""
+
 
     @work(exclusive=True, thread=True)
     def get_link_info(self):
