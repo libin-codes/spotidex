@@ -1,10 +1,9 @@
-
 from textual.widgets import Button, Static
 from textual.containers import Container
 from textual.widget import Widget
 
 from spotidex.cli.popup_screens.DownloadPathPopup import DownloadPathScreen
-from spotidex.cli.utils import Path, shorten_path
+from spotidex.cli.utils import Path, shorten_path, get_downloads_folder
 from textual.reactive import reactive
 
 CSS = """
@@ -41,7 +40,7 @@ DownloadPathSelector{
 
 class DownloadPathSelector(Widget):
     DEFAULT_CSS = CSS
-    value = reactive(str(Path.cwd()))
+    value = reactive(str(get_downloads_folder()))
 
     def compose(self):
         with Container(id="download-path-container"):
@@ -56,4 +55,6 @@ class DownloadPathSelector(Widget):
             self.app.push_screen(DownloadPathScreen(), change_value)
 
     def watch_value(self, value):
-        self.query_one("#download-path-label").update("[bold]"+shorten_path(value, 65))
+        self.query_one("#download-path-label").update(
+            "[bold]" + shorten_path(value, 65)
+        )

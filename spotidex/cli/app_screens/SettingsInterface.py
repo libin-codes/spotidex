@@ -5,9 +5,11 @@ from textual.reactive import reactive
 
 from spotidex.cli.custom_widgets.DownloadPathSelector import DownloadPathSelector
 from spotidex.cli.custom_widgets.MetadataCheckBox import MetadataCheckBox
-from spotidex.cli.custom_widgets.DownloadQualitySelection import DownloadQualitySelection
+from spotidex.cli.custom_widgets.DownloadQualitySelection import (
+    DownloadQualitySelection,
+)
 from spotidex.cli.custom_widgets.AppInterface import AppInterface
-from spotidex.cli.utils import Path
+from spotidex.cli.utils import get_downloads_folder
 
 CSS = """
 Settings{
@@ -56,23 +58,22 @@ class Settings(Screen):
             ),
             Button("SAVE SETTINGS", "success", id="save-settings-button"),
             Button("RESET SETTINGS", "error", id="reset-settings-button"),
-            id = "settings-interface"
+            id="settings-interface",
         )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "reset-settings-button":
             self.app.query_one(MetadataCheckBox).value = True
-            self.app.query_one(DownloadPathSelector).value = str(Path.cwd())
+            self.app.query_one(DownloadPathSelector).value = str(get_downloads_folder())
             self.app.query_one(DownloadQualitySelection).value = "high"
         elif event.button.id == "save-settings-button":
             self.app.notify("SETTINGS SAVED SUCCESSFULLY", title="Spotidex")
             self.app.saved_settings = {
-                "add_metadata":self.app.query_one(MetadataCheckBox).value ,
+                "add_metadata": self.app.query_one(MetadataCheckBox).value,
                 "download_path": self.app.query_one(DownloadPathSelector).value,
                 "download_quality": self.app.query_one(DownloadQualitySelection).value,
-                }
+            }
             self.app.pop_screen()
-            
-    def on_mount(self):
-        self.app.query_one("#nav-label").update('[bold]SETTINGS')
 
+    def on_mount(self):
+        self.app.query_one("#nav-label").update("[bold]SETTINGS")
