@@ -120,8 +120,8 @@ class Download(Screen):
             )
         else:
             track_info = (
-                f"{name[:45]}..."
-                if len(name) > 45
+                f"{name[:43]}... [{len(self.app.selected_tracks)} Tracks]"
+                if len(name) > 43
                 else f"{name} [{len(self.app.selected_tracks)} Tracks]"
             )
 
