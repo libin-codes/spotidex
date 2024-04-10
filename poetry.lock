@@ -493,6 +493,16 @@ plugins = ["importlib-metadata"]
 windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
+name = "pyperclip"
+version = "1.8.2"
+description = "A cross-platform clipboard module for Python. (Only handles plain text for now.)"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pyperclip-1.8.2.tar.gz", hash = "sha256:105254a8b04934f0bc84e9c24eb360a591aaf6535c9def5f29d92af107a9bf57"},
+]
+
+[[package]]
 name = "redis"
 version = "5.0.3"
 description = "Python client for Redis database and key-value store"
@@ -793,4 +803,4 @@ dev = ["coverage", "flake8", "pre-commit", "sphinx", "sphinx-rtd-theme", "yapf"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "a3fc9daf61f1187edcf8b5e9003f932cca9dd00bb6564a821eae10cc25e84ef4"
+content-hash = "23c1c89c713ebbc838663f6dc9c49a4e0f37afd22dfce4871bbc319fb60ceeb1"
