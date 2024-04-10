@@ -3,6 +3,8 @@ from mutagen.id3 import ID3, APIC, TPE1, TIT2, TALB
 import concurrent.futures
 from pathlib import Path
 from tqdm import tqdm
+from rich.progress import Progress, SpinnerColumn
+from rich.console import Console
 
 from spotidex.src.static import FFMPEG_URLS
 
@@ -121,7 +123,8 @@ def get_ffmpeg():
     ffmpeg_path = get_ffmpeg_path(os_name)
 
     if ffmpeg_path.exists():
-        run_ffmpeg(ffmpeg_path)
+        if not run_ffmpeg(ffmpeg_path) :
+            download_ffmpeg(ffmpeg_url, ffmpeg_path, os_name)
         return ffmpeg_path
 
     download_ffmpeg(ffmpeg_url, ffmpeg_path, os_name)
@@ -139,11 +142,9 @@ def run_ffmpeg(ffmpeg_path):
             [ffmpeg_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
         )
     except Exception:
-        print("Network Error: Please check your internet connection and try later")
-        exit()
-    finally:
-        os.chdir(current_path)
-
+        return False
+    os.chdir(current_path)
+    return True
 
 def download_ffmpeg(ffmpeg_url, ffmpeg_path, os_name):
     try:
@@ -151,25 +152,18 @@ def download_ffmpeg(ffmpeg_url, ffmpeg_path, os_name):
     except Exception:
         print("Network Error: Please check your internet connection and try later")
         exit()
-
-    with open(ffmpeg_path, "wb") as ffmpeg_file, tqdm(
-        total=100,
-        unit="%",
-        unit_scale=True,
-        unit_divisor=1024,
-        dynamic_ncols=True,
-        bar_format="Initializing : |{bar:50}| {percentage:.0f}% ",
-    ) as progress_bar:
+    with open(ffmpeg_path, "wb") as ffmpeg_file:
         try:
-            for data in ffmpeg_binary.iter_content(chunk_size=1024):
-                ffmpeg_file.write(data)
-                progress_bar.update(
-                    len(data)
-                    * 100
-                    / int(ffmpeg_binary.headers.get("content-length", 0))
-                )
-        except Exception:
-            progress_bar.close()
+            total_length = int(ffmpeg_binary.headers.get("content-length", 0))
+            with Progress(
+                SpinnerColumn('arc'),
+                " INITIALIZING{task.percentage:>3.0f}%",
+            ) as progress:
+                task = progress.add_task("Downloading", total=total_length)
+                for data in ffmpeg_binary.iter_content(chunk_size=1024):
+                    ffmpeg_file.write(data)
+                    progress.update(task, advance=len(data), total_bytes=total_length)
+        except Exception as e:
             print("Network Error: Please check your internet connection and try later")
             exit()
 
@@ -180,5 +174,5 @@ def get_valid_name(path, name):
     name, i = re.sub(r"[^\w\d(),.\-\[\] ]", "", name), 1
     add_mp3 = ".mp3" if ".mp3" in name else ""
     while Path(path, name).exists():
-        name, i = name.replace('.mp3',"").split(" (")[0] + f" ({i})" + add_mp3, i + 1
+        name, i = name.replace('.mp3',"").split(" (")[-1] + f" ({i})" + add_mp3, i + 1
     return name.replace('.mp3',"")
