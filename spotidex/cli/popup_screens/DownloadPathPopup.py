@@ -58,7 +58,7 @@ DirectoryTree{
 
 #download-path-confirm-button{
     width:23;
-    dock:left;
+    dock:right;
 
 }
 
@@ -79,8 +79,8 @@ DirectoryTree{
 }
 
 #downloads-folder-button{
-    dock:right;
     width:22;
+    dock:left;
 }
 
 #download-path-back-button:hover {
@@ -112,7 +112,7 @@ class DownloadPathScreen(ModalScreen):
                 yield self.FilteredDirectoryTree(self.current_path, id="filteredtree")
             with Container(id="download-path-button-container"):
                 yield Button(
-                    "CONFIRM", id="download-path-confirm-button", variant="success"
+                    "DOWNLOADS FOLDER", id="downloads-folder-button", variant="warning"
                 )
                 yield Button(
                     "CURRENT DIRECTORY",
@@ -120,7 +120,7 @@ class DownloadPathScreen(ModalScreen):
                     variant="error",
                 )
                 yield Button(
-                    "DOWNLOADS FOLDER", id="downloads-folder-button", variant="warning"
+                    "CONFIRM", id="download-path-confirm-button", variant="success"
                 )
 
     def refresh_tree(self):

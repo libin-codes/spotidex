@@ -1,4 +1,3 @@
-
 from spotidex import SpotifyContent
 from spotidex import SpotifyDownloader
 from pathlib import Path
@@ -20,6 +19,7 @@ users to download playlists, individual tracks, and entire albums effortlessly.
 
 App's GitHub repository is available at [link=https://github.com/libin-codes/spotidex]https://github.com/libin-codes/spotidex[/link][/italic]
 """
+
 
 def get_link_details(link):
     if "track" in link:
@@ -89,25 +89,60 @@ input_validator = lambda value: (
     else False
 )
 
+
 def get_data_drive_path():
-    if os.name == 'nt':  # Windows
-        system_drive = os.environ['SYSTEMDRIVE'] if 'SYSTEMDRIVE' in os.environ else 'C:'
-        drives = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-        available_drives = [drive + ':\\' for drive in drives if os.path.exists(drive + ':\\') and drive + ':' != system_drive]
+    if os.name == "nt":  # Windows
+        system_drive = (
+            os.environ["SYSTEMDRIVE"] if "SYSTEMDRIVE" in os.environ else "C:"
+        )
+        drives = [
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G",
+            "H",
+            "I",
+            "J",
+            "K",
+            "L",
+            "M",
+            "N",
+            "O",
+            "P",
+            "Q",
+            "R",
+            "S",
+            "T",
+            "U",
+            "V",
+            "W",
+            "X",
+            "Y",
+            "Z",
+        ]
+        available_drives = [
+            drive + ":\\"
+            for drive in drives
+            if os.path.exists(drive + ":\\") and drive + ":" != system_drive
+        ]
         return available_drives[0] if available_drives else None
     else:  # Unix-like systems
         # Filter out root directory ('/') from mounted drives
-        mounted_drives = [root for root, dirs, files in os.walk('/') if dirs or files]
+        mounted_drives = [root for root, dirs, files in os.walk("/") if dirs or files]
         return mounted_drives[0] if mounted_drives else None
+
 
 def get_downloads_folder():
     # Get the user's home directory
     home_dir = os.path.expanduser("~")
-    
+
     # Operating system specific logic to get the Downloads folder
-    if os.name == 'posix':  # Unix-like OS (Linux, macOS)
-        downloads_folder = os.path.join(home_dir, 'Downloads')
-    elif os.name == 'nt':   # Windows
-        downloads_folder = os.path.join(home_dir, 'Downloads')
-    
+    if os.name == "posix":  # Unix-like OS (Linux, macOS)
+        downloads_folder = os.path.join(home_dir, "Downloads")
+    elif os.name == "nt":  # Windows
+        downloads_folder = os.path.join(home_dir, "Downloads")
+
     return downloads_folder

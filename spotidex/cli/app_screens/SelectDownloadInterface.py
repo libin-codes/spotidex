@@ -17,8 +17,9 @@ SelectDownload{
 }
 
 #all-tracks {
-    border:tall grey 40%;
-    width: 64;
+    border:tall $boost;
+    border-title-align: center;
+    width: 63;
     height: 100%;
     background: $boost;
     padding-left:1;
@@ -59,7 +60,7 @@ SelectDownload{
 #selected-tracks-label{
     width:27;
     height: 3;
-    border:tall green 40%;
+    border:tall $boost;
     background:$boost;
     content-align:center middle;
     margin-bottom:2;

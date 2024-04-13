@@ -4,6 +4,7 @@ from textual.containers import Horizontal
 
 from spotidex.cli.custom_widgets.AppInterface import AppInterface
 from spotidex.cli.app_screens.MainMenuInterface import MainMenuInterface
+from spotidex.src.utils import SpotidexError
 from spotidex.cli.utils import input_validator, app_description
 from spotidex.cli.utils import get_link_details
 
@@ -37,8 +38,9 @@ Search {
 }
 
 #app-description{
-    border: round ansi_bright_cyan;
+    border:heavy ansi_bright_blue 80%;
     border-title-align: center;
+    padding-left:1;
 
 }
 
@@ -82,6 +84,9 @@ class Search(Screen):
         self.app.query_one("LoadingIndicator").styles.background = "#1c1c1c"
         try:
             self.app.link_details = get_link_details(self.app.spotify_link)
+            if int(self.app.link_details[0]['TOTAL TRACKS']) > 100:
+                raise SpotidexError("Maxlimit")
+                
         except Exception as spotidex_error:
             if spotidex_error.message == "NetworkError":
                 self.app.notify(
@@ -95,6 +100,14 @@ class Search(Screen):
                     title="INVALID LINK",
                     severity="error",
                 )
+            elif spotidex_error.message == "Maxlimit":
+                self.query_one("#search-input").value = ""
+                self.app.notify(
+                    "The total track of playlist/album has exceeded the maximum limit which is 100",
+                    title="MAX LIMIT REACHED",
+                    severity="error",
+                )
+                
             get_current_worker().cancel()
         self.app.query_one("#interface").loading = False
         self.app.query_one("#exit-button").disabled = False

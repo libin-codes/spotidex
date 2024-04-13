@@ -41,12 +41,12 @@ MainMenuInterface{
 }
 
 #download-button{
-    width:100%;
+    width:98%;
     column-span:1;
 }
 
 #download-all-button{
-    width:100%
+    width:98%
 }
 
 #select-download-button{
@@ -54,7 +54,7 @@ MainMenuInterface{
 }
 
 #settings-button{
-    width:98%;
+    width:100%;
     column-span:1;
 }
 
@@ -87,14 +87,14 @@ class MainMenuInterface(Screen):
         ]
         if "track" not in self.spotify_link:
             childrens.insert(
-                1, Button("DOWNLOAD ALL TRACK", "success", id="download-all-button")
+                3, Button("DOWNLOAD ALL TRACK", "success", id="download-all-button")
             )
             childrens.insert(
-                2, Button("SELECT TO DOWNLOAD", "success", id="select-download-button")
+                2, Button("SELECT TO DOWNLOAD", "warning", id="select-download-button")
             )
         else:
             childrens.insert(
-                1, Button("DOWNLOAD TRACK", "success", id="download-button")
+                2, Button("DOWNLOAD TRACK", "success", id="download-button")
             )
 
         yield AppInterface(*childrens, id="main-menu-interface")

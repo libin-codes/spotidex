@@ -10,7 +10,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from spotipy import SpotifyException
 from requests import ConnectionError,ReadTimeout
-
+from spotidex.src.content import SpotifyContent
 
 
 class SpotifyDownloader:
@@ -68,7 +68,6 @@ class SpotifyDownloader:
             raise SpotidexError("InvalidSpotifyLink")
         except (ConnectionError,ReadTimeout):
             raise SpotidexError("NetworkError")
-
         
         track_artist = ",".join([artist["name"] for artist in data["artists"]])
         query = data["name"]+f" song by {track_artist} official lyrics "
@@ -123,14 +122,14 @@ class SpotifyDownloader:
     ):
         playlist_id = link.split("/")[-1].split("?")[0]
         try:
-            playlist_data = self.sp.playlist(playlist_id)
-            track_links = extract_track_links(self.sp, link)
+            playlist_data = SpotifyContent().playlist_details(playlist_id)
+            track_links = [track["link"] for track in playlist_data['track_details']]
         except SpotifyException:
             raise SpotidexError("InvalidSpotifyLink")
         except (ConnectionError,ReadTimeout):
             raise SpotidexError("NetworkError")
         
-        folder_name = get_valid_name(download_path,playlist_data['name'])
+        folder_name = get_valid_name(download_path,playlist_data['playlist_name'])
 
         self._download_with_temp_directory(
                 track_links,
@@ -153,8 +152,8 @@ class SpotifyDownloader:
     ):
         album_id = link.split("/")[-1].split("?")[0]
         try:
-            album_data = self.sp.album(album_id)
-            track_links = extract_track_links(self.sp, link)
+            album_data = SpotifyContent().album_details(album_id)
+            track_links = [track["link"] for track in album_data['track_details']]
         except SpotifyException:
             raise SpotidexError("InvalidSpotifyLink")
         except (ConnectionError,ReadTimeout):

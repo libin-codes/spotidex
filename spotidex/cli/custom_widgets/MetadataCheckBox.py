@@ -41,22 +41,17 @@ MetadataCheckBox{
   
 }
 
-#metadata-checkbox:hover.inactive{
-    opacity:0.6;
+#metadata-checkbox:hover{
+    opacity:0.8;
 
 }
 
-#metadata-checkbox:hover.active{
-    opacity:1;
-
-}
 
 .inactive{
-    background:#787878;
-    opacity:0.5;
+    background:$error 8%;
 }
 .active{
-    background:$success 90%;
+    background:$success 8%;
 }
 
 """
@@ -75,11 +70,11 @@ class MetadataCheckBox(Widget):
 
     def watch_value(self, value):
         if value == True:
-            self.query_one("#metadata-checkbox").update("✔️")
+            self.query_one("#metadata-checkbox").update("🟢")
             self.query_one("#metadata-checkbox").remove_class("inactive")
             self.query_one("#metadata-checkbox").add_class("active")
         else:
-            self.query_one("#metadata-checkbox").update("")
+            self.query_one("#metadata-checkbox").update("🔴")
             self.query_one("#metadata-checkbox").remove_class("active")
             self.query_one("#metadata-checkbox").add_class("inactive")
  

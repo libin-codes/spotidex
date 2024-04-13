@@ -108,7 +108,7 @@ class Download(Screen):
         elif "album" in self.app.spotify_link:
             link_type = "ALBUM"
 
-        self.query_one("#info-container").border_title = f"{link_type} INFO"
+        self.query_one("#info-container").border_title = "DOWNLOAD INFO"
         name = self.app.link_details[0][f"{link_type} NAME"]
 
         if "track" in self.app.spotify_link:
