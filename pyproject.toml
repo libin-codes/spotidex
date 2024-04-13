@@ -24,6 +24,3 @@ spotidex = "spotidex:main"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[app.Spotidex]
-command = "spotidex"
