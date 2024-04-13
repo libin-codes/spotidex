@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "spotidex"
-version = "0.0.6"
+version = "0.0.7"
 description = "Spotify Downloader TUI"
 authors = ["Libin Lalu <libinlalu000@gmail.com>"]
 license = "MIT"
@@ -16,7 +16,7 @@ textual = "0.56.4"
 tqdm = "4.66.1"
 yt-dlp = "2024.3.10"
 ytmusicapi = "1.3.2"
-pyperclip = "^1.8.2"
+pyperclip = "1.8.2"
 
 [tool.poetry.scripts]
 spotidex = "spotidex:main"
@@ -24,3 +24,6 @@ spotidex = "spotidex:main"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[app.Spotidex]
+command = "spotidex"
