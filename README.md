@@ -30,7 +30,7 @@ pip install pipx
 
 After you have installed spotidex , you can run it by typing spotidex in your terminal 
 
-![](https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGF0bjY5dXl2NGQ0Z3MxMnIyaGk3ODlsMzk1ZWoweG1xOGM3am43cyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/6VE7N0rI24NpxvpwDp/giphy.gif)
+![](https://github.com/libin-codes/media/blob/main/spotidex-usage.gif)
 
 
 ## Compatibility
