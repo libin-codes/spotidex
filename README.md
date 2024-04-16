@@ -1,4 +1,4 @@
-![](https://github.com/libin-codes/media/raw/main/Spotidex%20Demo.mp4)
+https://github.com/libin-codes/spotidex/assets/129957992/dc1e20e2-3cb8-4385-bde4-e81bdc5c35b7
 
 # Spotidex [![PyPI - Version](https://img.shields.io/pypi/v/spotidex.svg)](https://pypi.org/project/spotidex) [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/spotidex.svg)](https://pypi.org/project/spotidex)
 
