@@ -1,6 +1,4 @@
-https://github.com/libin-codes/spotidex/assets/129957992/dc1e20e2-3cb8-4385-bde4-e81bdc5c35b7
-
-# Spotidex [![PyPI - Version](https://img.shields.io/pypi/v/spotidex.svg)](https://pypi.org/project/spotidex) [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/spotidex.svg)](https://pypi.org/project/spotidex)
+# Spotidex ‎ [![PyPI - Version](https://img.shields.io/pypi/v/spotidex.svg)](https://pypi.org/project/spotidex) [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/spotidex.svg)](https://pypi.org/project/spotidex)
 
 
 Spotidex is a cutting-edge powerful TUI app build using textual which is designed to enhance your Spotify experience. 
@@ -9,6 +7,8 @@ With an intuitive and user-friendly interface, Spotidex allows you to effortless
 
 Spotidex supports a wide range of Spotify links, enabling 
 users to download playlists, individual tracks, and entire albums effortlessly.
+
+https://github.com/libin-codes/spotidex/assets/129957992/dc1e20e2-3cb8-4385-bde4-e81bdc5c35b7
 
 ## Installation
 
@@ -28,7 +28,7 @@ pip install pipx
 
 After you have installed spotidex , you can run it by typing spotidex in your terminal 
 
-![](https://raw.githubusercontent.com/libin-codes/media/main/spotidex-usage.gif)
+![](https://github.com/libin-codes/spotidex/assets/129957992/40102e8a-6369-455d-95c6-4d7a53ffbcd4)
 
 
 ## Compatibility
