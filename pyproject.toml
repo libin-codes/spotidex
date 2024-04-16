@@ -1,10 +1,13 @@
 [tool.poetry]
 name = "spotidex"
-version = "0.0.7"
+version = "1.0.0"
 description = "Spotify Downloader TUI"
 authors = ["Libin Lalu <libinlalu000@gmail.com>"]
 license = "MIT"
 readme = "README.md"
+repository = "https://github.com/libin-codes/spotidex.git"
+homepage = "https://github.com/libin-codes/spotidex"
+keywords = ["spotify", "downloader", "spotidex", "music"]
 
 [tool.poetry.dependencies]
 python = "^3.8"

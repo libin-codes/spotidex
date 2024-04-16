@@ -1,4 +1,4 @@
-import os, re, stat, platform, requests, subprocess
+import os, re, stat, platform, requests, subprocess ,shutil
 from mutagen.id3 import ID3, APIC, TPE1, TIT2, TALB
 import concurrent.futures
 from pathlib import Path
@@ -154,3 +154,10 @@ def get_valid_name(path, name):
         )
 
     return name.replace(".mp3", "")
+
+def delete_temp_folders():
+    directory = get_spotidex_data_directory()
+    for item in os.listdir(directory):
+        item_path = os.path.join(directory, item)
+        if os.path.isdir(item_path):
+            shutil.rmtree(item_path)

@@ -7,6 +7,8 @@ from spotidex.cli.utils import (
     Path,
     get_data_drive_path,
     get_downloads_folder,
+    os,
+    can_create_directory,
 )
 
 CSS = """
@@ -133,17 +135,18 @@ class DownloadPathScreen(ModalScreen):
         )
 
     def on_directory_tree_directory_selected(self, path):
-        if self.current_path != str(get_downloads_folder()):
-            self.current_path = str(path.path)
+        self.current_path = str(path.path)
         self.refresh_tree()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "download-path-back-button":
-            if self.current_path == str(get_downloads_folder()):
-                self.current_path = str(Path(get_data_drive_path()))
-            else:
+            if os.name == "nt":
                 self.current_path = str(
                     Path("\\".join(self.current_path.split("\\")[:-1]) + "\\")
+                )
+            else:
+                self.current_path = str(
+                    Path("/".join(self.current_path.split("/")[:-1]) + "/")
                 )
             self.refresh_tree()
 
@@ -156,4 +159,10 @@ class DownloadPathScreen(ModalScreen):
             self.refresh_tree()
 
         elif event.button.id == "download-path-confirm-button":
-            self.dismiss(self.current_path)
+            if can_create_directory(self.current_path):
+                self.dismiss(self.current_path)
+            else:
+                self.app.notify(
+                    "Cannot access the given path, please run the terminal as administrator or use other path",
+                    title="PERMISSION DENIED",severity="warning"
+                )

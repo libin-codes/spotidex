@@ -86,7 +86,7 @@ class Download(Screen):
             Horizontal(
                 Label("PROGRESS", id="progress"),
                 Horizontal(
-                    Static("DOWNLOADING : ", id="stat"), ProgressBar(id="bar"), id="bc"
+                    Static("DOWNLOADING : ", id="stat"), ProgressBar(id="progress-bar"), id="bc"
                 ),
                 id="progress-bar-container",
             ),
@@ -142,14 +142,14 @@ class Download(Screen):
         self.download_music()
 
     def progress_hook(self, percent):
-        if self.app.query_one("ProgressBar").percentage != 0.0:
-            self.app.query_one("ProgressBar").update(total=100)
-        self.app.query_one("ProgressBar",ProgressBar).update(progress=float(percent))
+        if self.query_one("#progress-bar",ProgressBar).total == None:
+            self.query_one("#progress-bar").update(total=100)
+        self.app.query_one("#progress-bar",ProgressBar).update(progress=float(percent))
 
     def on_worker_state_changed(self, event) -> None:
         def eval(value):
             if value == "retry":
-                self.app.query_one("ProgressBar",ProgressBar).update(progress=0, total=None)
+                self.query_one("#progress-bar",ProgressBar).update(progress=0, total=None)
                 self.download_music()
 
         if str(event.state) == "WorkerState.CANCELLED":

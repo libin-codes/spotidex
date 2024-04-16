@@ -53,8 +53,8 @@ Search {
 class Search(Screen):
     DEFAULT_CSS = CSS
     BINDINGS = [
-        Binding("tab", "paste_link", "PASTE SPOTIFY LINK",priority=True),
-        Binding("delete", "clear_input", "CLEAR INPUT",priority=True)
+        Binding("tab", "paste_link", "PASTE SPOTIFY LINK", priority=True),
+        Binding("delete", "clear_input", "CLEAR INPUT", priority=True),
     ]
 
     def compose(self):
@@ -71,22 +71,24 @@ class Search(Screen):
         )
 
     def action_paste_link(self):
-        if self.query_one("#search-input", Input).value =="":
+        if self.query_one("#search-input", Input).value == "":
             self.query_one("#search-input", Input).value = pyperclip.paste()
         self.query_one("#search-input", Input).focus()
-    
+
     def action_clear_input(self):
         self.query_one("#search-input", Input).value = ""
-
 
     @work(exclusive=True, thread=True)
     def get_link_info(self):
         self.app.query_one("LoadingIndicator").styles.background = "#1c1c1c"
         try:
             self.app.link_details = get_link_details(self.app.spotify_link)
-            if int(self.app.link_details[0]['TOTAL TRACKS']) > 100:
+            if (
+                "track" not in self.app.spotify_link
+                and int(self.app.link_details[0]["TOTAL TRACKS"]) > 100
+            ):
                 raise SpotidexError("Maxlimit")
-                
+
         except Exception as spotidex_error:
             if spotidex_error.message == "NetworkError":
                 self.app.notify(
@@ -107,7 +109,7 @@ class Search(Screen):
                     title="MAX LIMIT REACHED",
                     severity="error",
                 )
-                
+
             get_current_worker().cancel()
         self.app.query_one("#interface").loading = False
         self.app.query_one("#exit-button").disabled = False

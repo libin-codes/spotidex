@@ -16,6 +16,7 @@ from spotidex.src.content import SpotifyContent
 class SpotifyDownloader:
     def __init__(self) -> None:
         self.spotidex_path = get_spotidex_data_directory()
+        delete_temp_folders()
         self.ffmpeg_path = get_ffmpeg()
         self.total_tracks = None
         self.sp = spotipy.Spotify(
@@ -43,10 +44,13 @@ class SpotifyDownloader:
             else:
                 temp_path = Path(temp_folder)
 
-            done, not_done = pool_download(
+            done, un_done = pool_download(
                 self, list(set(links)), custom_hook, temp_path, quality, metadata
             )
-            if len(not_done) != 0:
+            try:
+                for done_result in done:done_result.result()
+                for undone_result in un_done:undone_result.result()
+            except Exception:
                 raise SpotidexError("NetworkError")
             progress_hook(self, {"status": "downloaded"}, custom_hook)
             for file_path in Path(temp_folder).iterdir():
@@ -76,7 +80,7 @@ class SpotifyDownloader:
         with TemporaryDirectory(dir=str(self.spotidex_path)) as temp_folder:
             options = {
                 "format": "bestaudio/best",
-                "outtmpl": str(download_path)+'\\'+file_name,
+                "outtmpl": os.path.join(str(download_path),file_name),
                 "quiet": True,
                 "noprogress": True,
                 "progress": "false",
@@ -94,13 +98,16 @@ class SpotifyDownloader:
                 else [],
             }
                 
-            if self.total_tracks == None:
-                options['outtmpl'] = str(Path(temp_folder))+'\\'+file_name
-            ydl = yt_dlp.YoutubeDL(options)
-            yt_video_result = ydl.extract_info(f"ytsearch:{query}", download=False)
-            first_yt_video_link = yt_video_result["entries"][0]["webpage_url"]
-            yt_video_download = ydl.extract_info(first_yt_video_link, download=True)
-            downloaded_path = ydl.prepare_filename(yt_video_download)
+            try:
+                if self.total_tracks == None:
+                    options['outtmpl'] = os.path.join(str(Path(temp_folder)),file_name)
+                ydl = yt_dlp.YoutubeDL(options)
+                yt_video_result = ydl.extract_info(f"ytsearch:{query}", download=False)
+                first_yt_video_link = yt_video_result["entries"][0]["webpage_url"]
+                yt_video_download = ydl.extract_info(first_yt_video_link, download=True)
+                downloaded_path = ydl.prepare_filename(yt_video_download)
+            except Exception:
+                raise SpotidexError("NetworkError")
 
             if metadata:
                 add_metadata(data, Path(downloaded_path + ".mp3").resolve())
@@ -160,7 +167,7 @@ class SpotifyDownloader:
             raise SpotidexError("NetworkError")
         
         
-        folder_name = get_valid_name(download_path,album_data['name'])
+        folder_name = get_valid_name(download_path,album_data['album_name'])
         
         self._download_with_temp_directory(
                 track_links,

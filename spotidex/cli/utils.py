@@ -65,13 +65,13 @@ def get_link_details(link):
 
 def shorten_path(path: str, length):
     while len(path) > length:
-        path_parts = path.split("\\")
+        path_parts = path.split("\\") if os.name == "nt" else path.split("/")
         if "..." in path_parts:
             path_parts.pop(2)
         else:
             path_parts.pop(1)
             path_parts.insert(1, "...")
-        path = "\\".join(path_parts)
+        path = "\\".join(path_parts) if os.name == "nt" else "/".join(path_parts)
     return path
 
 
@@ -91,58 +91,28 @@ input_validator = lambda value: (
 
 
 def get_data_drive_path():
-    if os.name == "nt":  # Windows
-        system_drive = (
-            os.environ["SYSTEMDRIVE"] if "SYSTEMDRIVE" in os.environ else "C:"
-        )
-        drives = [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G",
-            "H",
-            "I",
-            "J",
-            "K",
-            "L",
-            "M",
-            "N",
-            "O",
-            "P",
-            "Q",
-            "R",
-            "S",
-            "T",
-            "U",
-            "V",
-            "W",
-            "X",
-            "Y",
-            "Z",
-        ]
-        available_drives = [
-            drive + ":\\"
-            for drive in drives
-            if os.path.exists(drive + ":\\") and drive + ":" != system_drive
-        ]
-        return available_drives[0] if available_drives else None
-    else:  # Unix-like systems
-        # Filter out root directory ('/') from mounted drives
-        mounted_drives = [root for root, dirs, files in os.walk("/") if dirs or files]
-        return mounted_drives[0] if mounted_drives else None
-
+    if os.name != "nt":
+        return "/"
+    drives = [chr(_) for _ in list(range(ord("A"),ord("Z")+1))]
+    drives.remove("C")
+    available_drives = [
+        drive + ":\\"
+        for drive in drives
+        if os.path.exists(drive + ":\\")
+    ]
+    return available_drives[0] if available_drives else None
 
 def get_downloads_folder():
-    # Get the user's home directory
     home_dir = os.path.expanduser("~")
-
-    # Operating system specific logic to get the Downloads folder
-    if os.name == "posix":  # Unix-like OS (Linux, macOS)
-        downloads_folder = os.path.join(home_dir, "Downloads")
-    elif os.name == "nt":  # Windows
-        downloads_folder = os.path.join(home_dir, "Downloads")
+    downloads_folder = os.path.join(home_dir, "Downloads")
 
     return downloads_folder
+
+def can_create_directory(path):
+    try:
+        os.mkdir(os.path.join(path,"temp826328ljij"))
+        shutil.rmtree(os.path.join(path,"temp826328ljij"))
+        return True
+    
+    except PermissionError:
+        return False
