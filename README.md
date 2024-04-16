@@ -35,12 +35,6 @@ After you have installed spotidex , you can run it by typing spotidex in your te
 
 Spotidex runs on Linux, macOS, and Windows. Spotidex requires Python 3.8 or above.
 
-## Disclaimer !!!
-
-Spotidex uses YouTube as a source for music downloads. This method is used to avoid any issues related to downloading music from Spotify.
-
-Users are responsible for their actions and potential legal consequences. We do not support unauthorized downloading of copyrighted material and take no responsibility for user actions.
-
 ## License
 
 `spotidex` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.
